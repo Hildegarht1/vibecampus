@@ -103,13 +103,16 @@ const keywords = {
 
 let state = {
   mode: "event",
-  responses: [...templates.cultural.responses],
+  sessionCode: createSessionCode(),
+  responses: hydrateResponses(templates.cultural.responses),
   lastReport: null
 };
 
 const $ = (id) => document.getElementById(id);
 
 function init() {
+  hydrateSessionFromUrl();
+  renderSessionMeta();
   renderNews();
   renderTrends();
   renderResponses();
@@ -140,6 +143,8 @@ function bindEvents() {
   $("runVibeCheck").addEventListener("click", runAnalysis);
   $("copySummary").addEventListener("click", copySummary);
   $("saveSession").addEventListener("click", saveSession);
+  $("newSessionCode").addEventListener("click", refreshSessionCode);
+  $("copySessionLink").addEventListener("click", copySessionLink);
   $("toggleHistory").addEventListener("click", toggleHistoryPanel);
   $("clearHistory").addEventListener("click", clearHistory);
   $("shuffleBoost").addEventListener("click", shuffleBoost);
@@ -210,7 +215,7 @@ function loadTemplate(name) {
   $("sessionTitle").value = template.title;
   $("questionInput").value = template.question;
   $("optionsInput").value = template.options.join("\n");
-  state.responses = [...template.responses];
+  state.responses = hydrateResponses(template.responses);
   renderResponses();
   runAnalysis();
   showToast("Demo vibe loaded.");
@@ -248,10 +253,10 @@ function renderResponses() {
       (response, index) => `
         <article class="response-item">
           <div class="response-meta">
-            <span>response ${index + 1}</span>
-            <span>${pickEmoji(response)}</span>
+            <span>${escapeHtml(response.author)} ${response.anonymous ? "(anonymous)" : ""} · response ${index + 1}</span>
+            <span>${pickEmoji(response.text)}</span>
           </div>
-          <p>${escapeHtml(response)}</p>
+          <p>${escapeHtml(response.text)}</p>
         </article>
       `
     )
@@ -264,7 +269,15 @@ function addResponse() {
     showToast("Drop a response first.");
     return;
   }
-  state.responses.unshift(value);
+  const anonymous = $("anonymousMode").checked;
+  const rawName = $("studentName").value.trim();
+  state.responses.unshift({
+    id: `rsp-${Date.now()}`,
+    text: value,
+    author: anonymous ? "Anonymous" : rawName || "Campus student",
+    anonymous,
+    createdAt: new Date().toISOString()
+  });
   $("newResponse").value = "";
   renderResponses();
   runAnalysis();
@@ -274,7 +287,7 @@ function runAnalysis() {
   const title = $("sessionTitle").value.trim() || "Untitled campus vibe";
   const question = $("questionInput").value.trim() || "What is the campus saying?";
   const options = $("optionsInput").value.split("\n").map((x) => x.trim()).filter(Boolean);
-  const responses = [...state.responses];
+  const responses = state.responses.map((response) => response.text);
   const text = responses.join(" ").toLowerCase();
 
   const themeScores = Object.entries(keywords).map(([theme, words]) => {
@@ -443,10 +456,24 @@ function buildAutomationPayload() {
     mode: state.mode,
     created_at: new Date().toISOString(),
     session: {
+      code: state.sessionCode,
       title: state.lastReport.title,
       question: state.lastReport.question,
+      share_link: buildShareLink(),
       response_count: state.responses.length
     },
+    participants: {
+      named_count: state.responses.filter((response) => !response.anonymous).length,
+      anonymous_count: state.responses.filter((response) => response.anonymous).length,
+      submitters: [...new Set(state.responses.map((response) => response.author))]
+    },
+    responses: state.responses.map((response) => ({
+      id: response.id,
+      author: response.author,
+      anonymous: response.anonymous,
+      text: response.text,
+      created_at: response.createdAt
+    })),
     ai_analysis: {
       vibe_score: state.lastReport.vibeScore,
       drama_meter: state.lastReport.drama,
@@ -468,6 +495,62 @@ function buildAutomationPayload() {
     })),
     share_summary: state.lastReport.summary
   };
+}
+
+function hydrateResponses(responses) {
+  const sampleNames = ["Ama", "Max", "Lea", "Sam", "Mina", "Theo", "Hilda", "Group chat"];
+  return responses.map((response, index) => {
+    if (typeof response === "object" && response.text) return response;
+    return {
+      id: `demo-${index + 1}`,
+      text: response,
+      author: sampleNames[index % sampleNames.length],
+      anonymous: false,
+      createdAt: new Date(Date.now() - (index + 1) * 90000).toISOString()
+    };
+  });
+}
+
+function createSessionCode() {
+  return `VC-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+}
+
+function hydrateSessionFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("session");
+  if (code) state.sessionCode = code.toUpperCase();
+}
+
+function buildShareLink() {
+  const url = new URL(window.location.href);
+  url.searchParams.set("session", state.sessionCode);
+  url.hash = "create";
+  return url.toString();
+}
+
+function renderSessionMeta() {
+  $("sessionCode").textContent = state.sessionCode;
+  $("shareLink").value = buildShareLink();
+}
+
+function refreshSessionCode() {
+  state.sessionCode = createSessionCode();
+  renderSessionMeta();
+  renderAutomationPayload();
+  showToast("New session code ready.");
+}
+
+async function copySessionLink() {
+  const link = buildShareLink();
+  $("shareLink").value = link;
+  try {
+    await navigator.clipboard.writeText(link);
+    showToast("Session link copied.");
+  } catch {
+    $("shareLink").select();
+    document.execCommand("copy");
+    showToast("Session link selected.");
+  }
 }
 
 function renderAutomationPayload() {

@@ -84,6 +84,19 @@
               <input id="sessionTitle" type="text" value="Cultural night planning" />
             </label>
 
+            <div class="session-card" aria-label="Shareable session details">
+              <div>
+                <p class="eyebrow">student join code</p>
+                <strong id="sessionCode">VC-0000</strong>
+              </div>
+              <button class="secondary-action compact-button" id="newSessionCode" type="button">New code</button>
+              <label>
+                Share link
+                <input id="shareLink" type="text" readonly />
+              </label>
+              <button class="ghost-action compact-button" id="copySessionLink" type="button">Copy session link</button>
+            </div>
+
             <label>
               Ask the campus
               <textarea id="questionInput" rows="3">What should we improve for the next cultural night?</textarea>
@@ -121,6 +134,17 @@ Let the group chat decide</textarea>
             </div>
 
             <div id="responseList" class="response-list"></div>
+
+            <div class="student-identity">
+              <label>
+                Nickname
+                <input id="studentName" type="text" placeholder="e.g. Hilda, Group 3, Anonymous legend" />
+              </label>
+              <label class="check-row">
+                <input id="anonymousMode" type="checkbox" />
+                <span>Submit anonymously</span>
+              </label>
+            </div>
 
             <label>
               Add a new response

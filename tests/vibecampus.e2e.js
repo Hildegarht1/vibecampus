@@ -123,12 +123,35 @@ async function main() {
 
       assert.equal(payload.event, "vibecampus.vibe_report.generated");
       assert.equal(payload.source, "VibeCampus dashboard");
+      assert.match(payload.session.code, /^VC-/);
+      assert.match(payload.session.share_link, /session=VC-/);
+      assert.ok(payload.participants.named_count >= 1);
+      assert.ok(Array.isArray(payload.responses));
       assert.ok(payload.ai_analysis.vibe_score >= 0);
       assert.ok(["normal", "medium", "high"].includes(payload.routing.priority));
       assert.ok(Array.isArray(payload.next_actions));
 
       await page.click("#sendAutomation");
       await assertVisibleText(page, "Simulated automation run");
+    });
+
+    await runTest("adds a named student response and keeps identity in the payload", async () => {
+      await openApp(page, baseUrl);
+
+      await page.click("#newSessionCode");
+      const sessionCode = await page.textContent("#sessionCode");
+      await page.fill("#studentName", "Hilda");
+      await page.fill("#newResponse", "Saturday works better for my study group, but please keep the room near campus.");
+      await page.click("#addResponse");
+
+      await page.locator("#responseList").getByText("Hilda", { exact: false }).waitFor({ state: "visible" });
+      await page.click('a[href="#automation"]');
+      const payload = JSON.parse(await page.textContent("#automationPayload"));
+
+      assert.equal(payload.session.code, sessionCode);
+      assert.ok(payload.participants.submitters.includes("Hilda"));
+      assert.equal(payload.responses[0].author, "Hilda");
+      assert.equal(payload.responses[0].anonymous, false);
     });
 
     await runTest("generates a meme caption from a complaint", async () => {
@@ -158,7 +181,7 @@ async function openApp(page, baseUrl) {
     if (!String(error.message).includes("Timeout")) throw error;
   }
 
-  await page.getByText("Vote. Rant. Laugh. Decide.", { exact: false }).waitFor({
+  await page.getByRole("heading", { name: "Vote. Rant. Laugh. Decide." }).waitFor({
     state: "visible",
     timeout: 10000
   });

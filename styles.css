@@ -516,6 +516,49 @@ textarea:focus {
   background: var(--sun);
 }
 
+.session-card,
+.student-identity {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+  border: 2px solid #171326;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #fff, #ecfff9);
+  box-shadow: 5px 5px 0 #171326;
+  padding: 14px;
+}
+
+.session-card strong {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.session-card label,
+.student-identity label {
+  margin-bottom: 0;
+}
+
+.compact-button {
+  width: fit-content;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  color: var(--ink);
+  font-size: 0.92rem;
+  text-transform: none;
+}
+
+.check-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--purple);
+}
+
 .primary-action {
   width: 100%;
   margin-top: 6px;
