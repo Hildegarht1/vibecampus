@@ -4,6 +4,7 @@
   "private": true,
   "description": "AI-assisted campus feedback and automation dashboard.",
   "scripts": {
+    "build": "node scripts/build-site.js",
     "test": "node tests/vibecampus.e2e.js"
   },
   "devDependencies": {
