@@ -66,7 +66,7 @@ function handler(request, response) {
 const server = http.createServer(handler);
 const port = Number(process.env.PORT || 3000);
 server.listen(port, "0.0.0.0", () => {
-  console.log(\\\`VibeCampus listening on port \\\${port}\\\`);
+  console.log("VibeCampus listening on port " + port);
 });
 `
 );
