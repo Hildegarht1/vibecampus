@@ -1,0 +1,12 @@
+{
+  "name": "vibecampus",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-assisted campus feedback and automation dashboard.",
+  "scripts": {
+    "test": "node tests/vibecampus.e2e.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.1"
+  }
+}

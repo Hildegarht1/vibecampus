@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VibeCampus - Vote. Rant. Laugh. Decide.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="side-panel">
+        <div class="brand-lockup">
+          <div class="brand-mark">VC</div>
+          <div>
+            <p class="eyebrow">campus chaos control</p>
+            <h1>VibeCampus</h1>
+          </div>
+        </div>
+
+        <nav class="nav-stack" aria-label="VibeCampus sections">
+          <a href="#create" class="nav-link active">Create</a>
+          <a href="#results" class="nav-link">Vibe Report</a>
+          <a href="#automation" class="nav-link">Automation</a>
+          <a href="#trends" class="nav-link">Campus Pulse</a>
+          <a href="#memes" class="nav-link">Meme Lab</a>
+        </nav>
+
+        <section class="today-card">
+          <div class="card-topline">
+            <span>Daily Boost</span>
+            <button class="icon-button" id="shuffleBoost" type="button" aria-label="Shuffle daily boost">↻</button>
+          </div>
+          <p id="dailyBoost">Your future self is begging you to open the slides today.</p>
+        </section>
+
+        <section class="mini-feed">
+          <div class="card-topline">
+            <span>Campus News Lite</span>
+            <span class="live-pill">live-ish</span>
+          </div>
+          <ul id="campusNews"></ul>
+        </section>
+      </aside>
+
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <div class="badge-row">
+              <span class="spark-badge">🔥 campus pulse</span>
+              <span class="spark-badge alt">😂 memes included</span>
+              <span class="spark-badge soft">✨ group chat ready</span>
+            </div>
+            <h2>Vote. Rant. Laugh. Decide.</h2>
+            <p>
+              Ask anything. Turn chaos into a next move.
+            </p>
+          </div>
+          <div class="phone-preview" aria-label="Preview of a VibeCampus result card">
+            <div class="phone-top">
+              <span>Vibe Check</span>
+              <strong>78%</strong>
+            </div>
+            <p class="phone-question">Cultural night should happen on...</p>
+            <div class="vote-bar"><span style="width: 68%"></span></div>
+            <p class="phone-caption">Friday won. Budget is the hidden stress. Food must slap.</p>
+            <div class="reaction-row">
+              <span>🔥</span><span>😭</span><span>🍕</span><span>📚</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="workspace-grid" id="create">
+          <article class="panel create-panel">
+            <div class="section-heading">
+              <p class="eyebrow">start a session</p>
+              <h3>Create a vibe poll</h3>
+            </div>
+
+            <label>
+              Session title
+              <input id="sessionTitle" type="text" value="Cultural night planning" />
+            </label>
+
+            <label>
+              Ask the campus
+              <textarea id="questionInput" rows="3">What should we improve for the next cultural night?</textarea>
+            </label>
+
+            <div class="mode-row" role="group" aria-label="Poll mode">
+              <button class="mode-chip active" data-mode="event" type="button">🎉 Event</button>
+              <button class="mode-chip" data-mode="study" type="button">📚 Study</button>
+              <button class="mode-chip" data-mode="rant" type="button">💬 Rant</button>
+              <button class="mode-chip" data-mode="meme" type="button">😂 Meme</button>
+            </div>
+
+            <label>
+              Options, one per line
+              <textarea id="optionsInput" rows="5">Friday evening
+Saturday afternoon
+Sunday chill session
+Let the group chat decide</textarea>
+            </label>
+
+            <div class="quick-prompts">
+              <button type="button" data-template="cultural">Cultural night</button>
+              <button type="button" data-template="study">Study group</button>
+              <button type="button" data-template="exam">Exam stress</button>
+              <button type="button" data-template="food">Campus food</button>
+            </div>
+
+            <button class="primary-action" id="runVibeCheck" type="button">Generate vibe report</button>
+          </article>
+
+          <article class="panel response-panel">
+            <div class="section-heading">
+              <p class="eyebrow">messy input welcome</p>
+              <h3>Drop votes, rants & reasons</h3>
+            </div>
+
+            <div id="responseList" class="response-list"></div>
+
+            <label>
+              Add a new response
+              <textarea id="newResponse" rows="3" placeholder="e.g. Friday is best but please no expensive tickets. Also the food queue was wild."></textarea>
+            </label>
+            <div class="button-row">
+              <button class="secondary-action" id="addResponse" type="button">Add response</button>
+              <button class="ghost-action" id="clearResponses" type="button">Clear</button>
+            </div>
+          </article>
+        </section>
+
+        <section class="results-grid" id="results">
+          <article class="panel result-card loud">
+            <div class="card-topline">
+              <span>Vibe Score</span>
+              <span id="vibeLabel">ready</span>
+            </div>
+            <strong id="vibeScore">--</strong>
+            <p id="vibeSummary">Create a session to see the campus mood, group consensus, and next move.</p>
+          </article>
+
+          <article class="panel result-card">
+            <div class="card-topline">
+              <span>Drama Meter</span>
+              <span id="dramaLevel">waiting</span>
+            </div>
+            <div class="meter"><span id="dramaBar"></span></div>
+            <p id="dramaText">No drama detected yet.</p>
+          </article>
+
+          <article class="panel result-card">
+            <div class="card-topline">
+              <span>Winning Vibe</span>
+              <span>top pick</span>
+            </div>
+            <h3 id="winningOption">No option yet</h3>
+            <p id="winningReason">Responses will decide what the group wants.</p>
+          </article>
+
+          <article class="panel result-card">
+            <div class="card-topline">
+              <span>Meme Status</span>
+              <span>shareable</span>
+            </div>
+            <p id="memeStatus">"The group chat is typing..."</p>
+          </article>
+        </section>
+
+        <section class="action-strip panel">
+          <div class="section-heading">
+            <p class="eyebrow">next moves</p>
+            <h3>What the group should do now</h3>
+          </div>
+          <div id="actionList" class="action-list"></div>
+        </section>
+
+        <section class="analysis-grid">
+          <article class="panel">
+            <div class="section-heading">
+              <p class="eyebrow">quick read</p>
+              <h3>What people are saying</h3>
+            </div>
+            <div id="themeList" class="tag-cloud"></div>
+          </article>
+
+          <article class="panel share-card">
+            <div class="section-heading">
+              <p class="eyebrow">copy-paste ready</p>
+              <h3>Group chat summary</h3>
+            </div>
+            <textarea id="shareSummary" rows="8" readonly>Create a vibe report to generate a WhatsApp-ready update.</textarea>
+            <div class="button-row">
+              <button class="secondary-action" id="copySummary" type="button">Copy summary</button>
+              <button class="ghost-action" id="saveSession" type="button">Save to history</button>
+            </div>
+          </article>
+        </section>
+
+        <section class="automation-panel panel" id="automation">
+          <div class="automation-copy">
+            <p class="eyebrow">ai automation layer</p>
+            <h3>Agent-assisted campus decisions</h3>
+            <p>
+              VibeCampus turns messy votes, rants, and comments into structured intelligence, then routes the result to automation tools for logging, alerts, tasks, and group-chat follow-ups.
+            </p>
+            <div class="automation-flow" aria-label="Automation workflow">
+              <span>Webhook intake</span>
+              <span>AI classification</span>
+              <span>Decision routing</span>
+              <span>Sheet/task log</span>
+              <span>Group recap</span>
+            </div>
+            <label>
+              Optional automation webhook
+              <input id="webhookUrl" type="url" placeholder="Paste Make or n8n webhook URL" />
+            </label>
+            <div class="button-row">
+              <button class="primary-action compact" id="sendAutomation" type="button">Run automation handoff</button>
+              <button class="ghost-action" id="copyPayload" type="button">Copy payload</button>
+            </div>
+            <p class="automation-status" id="automationStatus">Local demo mode. Add a webhook when you want to connect Make, n8n, Sheets, Slack, Telegram, or email.</p>
+          </div>
+          <div class="payload-card">
+            <div class="card-topline">
+              <span>Agent console</span>
+              <span id="payloadRoute">local route</span>
+            </div>
+            <pre id="automationPayload">Generate a vibe report to preview the automation payload.</pre>
+          </div>
+        </section>
+
+        <section class="pulse-section" id="trends">
+          <div class="section-heading wide">
+            <p class="eyebrow">campus pulse</p>
+            <h3>Trending on campus today</h3>
+          </div>
+          <div class="trend-grid" id="trendGrid"></div>
+        </section>
+
+        <section class="meme-lab panel" id="memes">
+          <div class="section-heading">
+            <p class="eyebrow">meme lab</p>
+            <h3>Turn a complaint into a caption</h3>
+          </div>
+          <div class="meme-layout">
+            <label>
+              Campus complaint
+              <textarea id="memeInput" rows="3">The library WiFi went down during my presentation.</textarea>
+            </label>
+            <div class="meme-output">
+              <p id="memeCaption">When Eduroam sees your deadline and chooses character development.</p>
+              <button class="secondary-action" id="generateMeme" type="button">Generate caption</button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="history-panel">
+        <div class="card-topline">
+          <span>Saved Vibes</span>
+          <div class="history-actions">
+            <button class="icon-button" id="toggleHistory" type="button" aria-label="Collapse saved vibes">‹</button>
+            <button class="icon-button" id="clearHistory" type="button" aria-label="Clear saved vibes">×</button>
+          </div>
+        </div>
+        <div id="historyList" class="history-list">
+          <p class="muted">No saved sessions yet.</p>
+        </div>
+      </aside>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">Copied.</div>
+    <script src="app.js"></script>
+  </body>
+</html>
