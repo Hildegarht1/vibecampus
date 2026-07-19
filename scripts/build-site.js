@@ -20,10 +20,12 @@ fs.copyFileSync(path.join(rootDir, ".openai", "hosting.json"), path.join(openAiD
 
 fs.writeFileSync(
   path.join(serverDir, "index.js"),
-  `const http = require("node:http");
-const fs = require("node:fs");
-const path = require("node:path");
+  `import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "..");
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
