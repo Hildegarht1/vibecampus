@@ -45,19 +45,14 @@ button {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr) 250px;
-  gap: 18px;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 22px;
   width: min(1580px, 100%);
   margin: 0 auto;
   padding: 18px;
 }
 
-.app-shell.history-collapsed {
-  grid-template-columns: 280px minmax(0, 1fr);
-}
-
-.side-panel,
-.history-panel {
+.side-panel {
   position: sticky;
   top: 18px;
   height: calc(100vh - 36px);
@@ -71,7 +66,9 @@ button {
 }
 
 .history-panel {
-  transition: min-height 180ms ease, padding 180ms ease, transform 180ms ease;
+  position: static;
+  height: auto;
+  overflow: visible;
 }
 
 .history-actions {
@@ -79,54 +76,12 @@ button {
   gap: 8px;
 }
 
-.history-panel.collapsed {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  top: auto;
-  z-index: 40;
-  width: auto;
-  height: auto;
-  min-height: 0;
-  overflow: visible;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.history-panel.collapsed .card-topline {
-  margin: 0;
-}
-
-.history-panel.collapsed .history-actions {
-  flex-direction: row;
-}
-
-.history-panel.collapsed .card-topline > span {
-  display: none;
-}
-
 .history-panel.collapsed #historyList {
   display: none;
 }
 
 .history-panel.collapsed #toggleHistory {
-  width: auto;
-  height: auto;
-  min-width: 156px;
-  padding: 15px 18px;
-  border: 2px solid #171326;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--hot), var(--purple));
-  box-shadow: 5px 5px 0 #171326;
-  transform: none;
-  pointer-events: auto;
-  touch-action: manipulation;
-}
-
-.history-panel.collapsed #clearHistory {
-  display: none;
+  transform: rotate(180deg);
 }
 
 .brand-lockup {
@@ -517,7 +472,9 @@ textarea:focus {
 }
 
 .session-card,
-.student-identity {
+.student-identity,
+.vote-preview,
+.vote-box {
   display: grid;
   gap: 12px;
   margin: 14px 0;
@@ -526,6 +483,11 @@ textarea:focus {
   background: linear-gradient(145deg, #fff, #ecfff9);
   box-shadow: 5px 5px 0 #171326;
   padding: 14px;
+}
+
+.vote-preview,
+.vote-box {
+  background: linear-gradient(145deg, #fff, #fff4c8);
 }
 
 .session-card strong {
@@ -557,6 +519,42 @@ textarea:focus {
   width: 20px;
   height: 20px;
   accent-color: var(--purple);
+}
+
+.vote-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.vote-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 58px;
+  border: 2px solid #171326;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 4px 4px 0 #171326;
+  color: #171326;
+  font-weight: 900;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.vote-option.selected {
+  background: linear-gradient(135deg, var(--lime), var(--aqua));
+}
+
+.vote-option strong {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #171326;
+  color: white;
 }
 
 .primary-action {
@@ -755,6 +753,15 @@ textarea:focus {
   grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
   gap: 12px;
   margin: 20px 0;
+}
+
+.vote-chip {
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(144, 241, 95, 0.24);
+  color: #255019;
+  font-size: 0.78rem;
+  padding: 6px 9px;
 }
 
 .automation-flow span {

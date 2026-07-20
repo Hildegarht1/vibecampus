@@ -123,6 +123,7 @@ async function main() {
 
       assert.equal(payload.event, "vibecampus.vibe_report.generated");
       assert.equal(payload.source, "VibeCampus dashboard");
+      assert.ok(payload.votes.counts["Friday evening"] >= 1);
       assert.match(payload.session.code, /^VC-/);
       assert.match(payload.session.share_link, /session=VC-/);
       assert.ok(payload.participants.named_count >= 1);
@@ -141,6 +142,7 @@ async function main() {
       await page.click("#newSessionCode");
       const sessionCode = await page.textContent("#sessionCode");
       await page.fill("#studentName", "Hilda");
+      await page.locator("#studentVoteOptions [data-vote='Saturday afternoon']").click();
       await page.fill("#newResponse", "Saturday works better for my study group, but please keep the room near campus.");
       await page.click("#addResponse");
 
@@ -152,6 +154,8 @@ async function main() {
       assert.ok(payload.participants.submitters.includes("Hilda"));
       assert.equal(payload.responses[0].author, "Hilda");
       assert.equal(payload.responses[0].anonymous, false);
+      assert.equal(payload.responses[0].vote, "Saturday afternoon");
+      assert.ok(payload.votes.counts["Saturday afternoon"] >= 1);
     });
 
     await runTest("generates a meme caption from a complaint", async () => {

@@ -104,7 +104,8 @@ const keywords = {
 let state = {
   mode: "event",
   sessionCode: createSessionCode(),
-  responses: hydrateResponses(templates.cultural.responses),
+  responses: hydrateResponses(templates.cultural.responses, templates.cultural.options),
+  selectedVote: templates.cultural.options[0],
   lastReport: null
 };
 
@@ -115,6 +116,7 @@ function init() {
   renderSessionMeta();
   renderNews();
   renderTrends();
+  renderVoteOptions();
   renderResponses();
   renderHistory();
   bindEvents();
@@ -138,7 +140,15 @@ function bindEvents() {
   $("clearResponses").addEventListener("click", () => {
     state.responses = [];
     renderResponses();
+    renderVoteOptions();
+    runAnalysis();
     showToast("Responses cleared.");
+  });
+  $("optionsInput").addEventListener("input", () => {
+    const options = getOptions();
+    if (!options.includes(state.selectedVote)) state.selectedVote = options[0] || "";
+    renderVoteOptions();
+    runAnalysis();
   });
   $("runVibeCheck").addEventListener("click", runAnalysis);
   $("copySummary").addEventListener("click", copySummary);
@@ -215,7 +225,9 @@ function loadTemplate(name) {
   $("sessionTitle").value = template.title;
   $("questionInput").value = template.question;
   $("optionsInput").value = template.options.join("\n");
-  state.responses = hydrateResponses(template.responses);
+  state.responses = hydrateResponses(template.responses, template.options);
+  state.selectedVote = template.options[0];
+  renderVoteOptions();
   renderResponses();
   runAnalysis();
   showToast("Demo vibe loaded.");
@@ -256,6 +268,7 @@ function renderResponses() {
             <span>${escapeHtml(response.author)} ${response.anonymous ? "(anonymous)" : ""} · response ${index + 1}</span>
             <span>${pickEmoji(response.text)}</span>
           </div>
+          <strong class="vote-chip">Vote: ${escapeHtml(response.vote || "No vote")}</strong>
           <p>${escapeHtml(response.text)}</p>
         </article>
       `
@@ -265,30 +278,33 @@ function renderResponses() {
 
 function addResponse() {
   const value = $("newResponse").value.trim();
-  if (!value) {
-    showToast("Drop a response first.");
+  if (!state.selectedVote) {
+    showToast("Choose a vote first.");
     return;
   }
   const anonymous = $("anonymousMode").checked;
   const rawName = $("studentName").value.trim();
   state.responses.unshift({
     id: `rsp-${Date.now()}`,
-    text: value,
+    text: value || `Voted for ${state.selectedVote}.`,
+    vote: state.selectedVote,
     author: anonymous ? "Anonymous" : rawName || "Campus student",
     anonymous,
     createdAt: new Date().toISOString()
   });
   $("newResponse").value = "";
   renderResponses();
+  renderVoteOptions();
   runAnalysis();
 }
 
 function runAnalysis() {
   const title = $("sessionTitle").value.trim() || "Untitled campus vibe";
   const question = $("questionInput").value.trim() || "What is the campus saying?";
-  const options = $("optionsInput").value.split("\n").map((x) => x.trim()).filter(Boolean);
+  const options = getOptions();
   const responses = state.responses.map((response) => response.text);
   const text = responses.join(" ").toLowerCase();
+  const voteCounts = getVoteCounts(options);
 
   const themeScores = Object.entries(keywords).map(([theme, words]) => {
     const score = words.reduce((total, word) => total + countMatches(text, word), 0);
@@ -304,7 +320,7 @@ function runAnalysis() {
   const negative = themeScores.find((x) => x.theme === "negative")?.score || 0;
   const vibeScore = clamp(58 + positive * 5 - negative * 4 + responses.length * 2, 28, 96);
   const drama = clamp(negative * 13 + rankedThemes.length * 8 + disagreementScore(options, text), 12, 94);
-  const winning = pickWinningOption(options, text);
+  const winning = pickWinningOption(options, text, voteCounts);
   const meme = buildMemeStatus(rankedThemes, vibeScore, drama);
   const actions = buildActions(title, winning, rankedThemes, question);
   const summary = buildShareSummary(title, winning, vibeScore, drama, rankedThemes, actions, meme);
@@ -316,6 +332,7 @@ function runAnalysis() {
     vibeScore,
     drama,
     themes: rankedThemes,
+    voteCounts,
     actions,
     summary,
     meme
@@ -359,8 +376,12 @@ function disagreementScore(options, text) {
   return nonZero > 2 ? 24 : nonZero > 1 ? 12 : 4;
 }
 
-function pickWinningOption(options, text) {
+function pickWinningOption(options, text, voteCounts = {}) {
   if (!options.length) return "Add options to pick a winner";
+  const countedVotes = Object.values(voteCounts).reduce((total, count) => total + count, 0);
+  if (countedVotes > 0) {
+    return Object.entries(voteCounts).sort((a, b) => b[1] - a[1])[0][0];
+  }
   const scored = options.map((option, index) => {
     const words = option.toLowerCase().split(/\W+/).filter((word) => word.length > 3);
     const score = words.reduce((total, word) => total + countMatches(text, word), 0) + (options.length - index) * 0.15;
@@ -462,6 +483,10 @@ function buildAutomationPayload() {
       share_link: buildShareLink(),
       response_count: state.responses.length
     },
+    votes: {
+      selected_options: getOptions(),
+      counts: state.lastReport.voteCounts
+    },
     participants: {
       named_count: state.responses.filter((response) => !response.anonymous).length,
       anonymous_count: state.responses.filter((response) => response.anonymous).length,
@@ -471,6 +496,7 @@ function buildAutomationPayload() {
       id: response.id,
       author: response.author,
       anonymous: response.anonymous,
+      vote: response.vote,
       text: response.text,
       created_at: response.createdAt
     })),
@@ -497,17 +523,66 @@ function buildAutomationPayload() {
   };
 }
 
-function hydrateResponses(responses) {
+function hydrateResponses(responses, options = []) {
   const sampleNames = ["Ama", "Max", "Lea", "Sam", "Mina", "Theo", "Hilda", "Group chat"];
   return responses.map((response, index) => {
     if (typeof response === "object" && response.text) return response;
     return {
       id: `demo-${index + 1}`,
       text: response,
+      vote: inferVote(response, options, index),
       author: sampleNames[index % sampleNames.length],
       anonymous: false,
       createdAt: new Date(Date.now() - (index + 1) * 90000).toISOString()
     };
+  });
+}
+
+function getOptions() {
+  return $("optionsInput").value.split("\n").map((x) => x.trim()).filter(Boolean);
+}
+
+function inferVote(response, options, index) {
+  if (!options.length) return "";
+  const lower = response.toLowerCase();
+  const match = options.find((option) => lower.includes(option.toLowerCase().split(" ")[0]));
+  return match || options[index % options.length];
+}
+
+function getVoteCounts(options) {
+  return options.reduce((counts, option) => {
+    counts[option] = state.responses.filter((response) => response.vote === option).length;
+    return counts;
+  }, {});
+}
+
+function renderVoteOptions() {
+  const options = getOptions();
+  if (!options.length) {
+    $("voteOptions").innerHTML = `<p class="muted">Add options to create vote buttons.</p>`;
+    $("studentVoteOptions").innerHTML = `<p class="muted">No vote options yet.</p>`;
+    $("selectedVoteLabel").textContent = "none selected";
+    return;
+  }
+
+  if (!options.includes(state.selectedVote)) state.selectedVote = options[0];
+  const voteCounts = getVoteCounts(options);
+  const renderButton = (option) => `
+    <button class="vote-option ${option === state.selectedVote ? "selected" : ""}" data-vote="${escapeHtml(option)}" type="button">
+      <span>${escapeHtml(option)}</span>
+      <strong>${voteCounts[option] || 0}</strong>
+    </button>
+  `;
+
+  $("voteOptions").innerHTML = options.map(renderButton).join("");
+  $("studentVoteOptions").innerHTML = options.map(renderButton).join("");
+  $("selectedVoteLabel").textContent = state.selectedVote;
+
+  document.querySelectorAll("[data-vote]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.selectedVote = button.dataset.vote;
+      renderVoteOptions();
+    });
   });
 }
 
@@ -671,10 +746,8 @@ function clearHistory() {
 
 function toggleHistoryPanel() {
   const panel = document.querySelector(".history-panel");
-  const shell = document.querySelector(".app-shell");
   const collapsed = panel.classList.toggle("collapsed");
-  shell.classList.toggle("history-collapsed", collapsed);
-  $("toggleHistory").textContent = collapsed ? "Saved Vibes" : "‹";
+  $("toggleHistory").textContent = collapsed ? "+" : "-";
   $("toggleHistory").setAttribute("aria-label", collapsed ? "Expand saved vibes" : "Collapse saved vibes");
 }
 

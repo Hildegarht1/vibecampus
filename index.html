@@ -116,6 +116,10 @@ Saturday afternoon
 Sunday chill session
 Let the group chat decide</textarea>
             </label>
+            <div class="vote-preview">
+              <p class="eyebrow">student voting options</p>
+              <div id="voteOptions" class="vote-options" aria-label="Vote options"></div>
+            </div>
 
             <div class="quick-prompts">
               <button type="button" data-template="cultural">Cultural night</button>
@@ -129,8 +133,16 @@ Let the group chat decide</textarea>
 
           <article class="panel response-panel">
             <div class="section-heading">
-              <p class="eyebrow">messy input welcome</p>
-              <h3>Drop votes, rants & reasons</h3>
+              <p class="eyebrow">student vote station</p>
+              <h3>Vote, then add the why</h3>
+            </div>
+
+            <div class="vote-box">
+              <div class="card-topline">
+                <span>Choose your vote</span>
+                <span id="selectedVoteLabel">none selected</span>
+              </div>
+              <div id="studentVoteOptions" class="vote-options" aria-label="Student vote choices"></div>
             </div>
 
             <div id="responseList" class="response-list"></div>
@@ -147,11 +159,11 @@ Let the group chat decide</textarea>
             </div>
 
             <label>
-              Add a new response
+              Optional reason or rant
               <textarea id="newResponse" rows="3" placeholder="e.g. Friday is best but please no expensive tickets. Also the food queue was wild."></textarea>
             </label>
             <div class="button-row">
-              <button class="secondary-action" id="addResponse" type="button">Add response</button>
+              <button class="secondary-action" id="addResponse" type="button">Submit vote</button>
               <button class="ghost-action" id="clearResponses" type="button">Clear</button>
             </div>
           </article>
@@ -224,6 +236,19 @@ Let the group chat decide</textarea>
           </article>
         </section>
 
+        <section class="history-panel panel" id="history">
+          <div class="card-topline">
+            <span>Saved Vibes</span>
+            <div class="history-actions">
+              <button class="icon-button" id="toggleHistory" type="button" aria-label="Collapse saved vibes">-</button>
+              <button class="icon-button" id="clearHistory" type="button" aria-label="Clear saved vibes">×</button>
+            </div>
+          </div>
+          <div id="historyList" class="history-list">
+            <p class="muted">No saved sessions yet.</p>
+          </div>
+        </section>
+
         <section class="automation-panel panel" id="automation">
           <div class="automation-copy">
             <p class="eyebrow">ai automation layer</p>
@@ -283,7 +308,7 @@ Let the group chat decide</textarea>
         </section>
       </main>
 
-      <aside class="history-panel">
+      <aside class="history-panel legacy-history-panel" hidden>
         <div class="card-topline">
           <span>Saved Vibes</span>
           <div class="history-actions">
