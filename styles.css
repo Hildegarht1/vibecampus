@@ -795,6 +795,39 @@ textarea:focus {
   background: #ffe7f1;
 }
 
+.automation-preview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.automation-preview article {
+  min-width: 0;
+  border: 1px solid rgba(23, 19, 38, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 12px;
+}
+
+.automation-preview span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.automation-preview strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
 .automation-status {
   margin: 12px 0 0;
   border-left: 5px solid var(--purple);
@@ -1013,6 +1046,10 @@ textarea:focus {
   }
 
   .automation-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .automation-preview {
     grid-template-columns: 1fr;
   }
 

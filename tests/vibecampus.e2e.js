@@ -131,6 +131,10 @@ async function main() {
       assert.ok(payload.ai_analysis.vibe_score >= 0);
       assert.ok(["normal", "medium", "high"].includes(payload.routing.priority));
       assert.ok(Array.isArray(payload.next_actions));
+      assert.ok(payload.automation_outputs.google_sheets_row.log_id.startsWith("VCLOG-"));
+      assert.ok(Array.isArray(payload.automation_outputs.task_queue));
+      assert.ok(payload.automation_outputs.task_queue[0].task_id.includes(payload.session.code));
+      assert.match(payload.automation_outputs.group_recap.short_caption, /Ready to post|Organizer review needed/);
 
       await page.click("#sendAutomation");
       await assertVisibleText(page, "Simulated automation run");

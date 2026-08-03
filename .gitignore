@@ -1,2 +1,5 @@
 dist/
 node_modules/
+docs/render-check/
+docs/render-check-*/
+docs/*.pdf

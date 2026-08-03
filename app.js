@@ -470,6 +470,19 @@ Vote. Rant. Laugh. Decide.`;
 
 function buildAutomationPayload() {
   if (!state.lastReport) runAnalysis();
+  const routing = buildRoutingDecision();
+  const rowId = `VCLOG-${Date.now()}`;
+  const sheetRow = buildSheetRow(rowId, routing);
+  const groupRecap = buildGroupRecap(routing);
+  const taskQueue = state.lastReport.actions.map((action, index) => ({
+    task_id: `${state.sessionCode}-TASK-${index + 1}`,
+    title: action.title,
+    details: action.text,
+    owner: routing.needs_human_review ? "Campus organizer" : "Session owner",
+    status: "open",
+    priority: routing.priority,
+    due_hint: index === 0 ? "today" : index === 1 ? "24 hours" : "before final decision"
+  }));
 
   return {
     event: "vibecampus.vibe_report.generated",
@@ -505,21 +518,79 @@ function buildAutomationPayload() {
       drama_meter: state.lastReport.drama,
       winning_option: state.lastReport.winning,
       meme_status: state.lastReport.meme,
+      summary: buildVibeSummary(state.lastReport.vibeScore, state.lastReport.themes),
       themes: state.lastReport.themes.map((item) => ({
         label: item.theme,
         score: item.score
       }))
     },
-    routing: {
-      priority: state.lastReport.drama > 70 ? "high" : state.lastReport.vibeScore < 60 ? "medium" : "normal",
-      suggested_channel: state.lastReport.drama > 70 ? "organizer_alert" : "group_chat_summary",
-      needs_human_review: state.lastReport.drama > 70 || state.lastReport.vibeScore < 55
+    routing,
+    automation_outputs: {
+      google_sheets_row: sheetRow,
+      task_queue: taskQueue,
+      organizer_alert: routing.needs_human_review ? buildOrganizerAlert(routing) : null,
+      group_recap: groupRecap
     },
-    next_actions: state.lastReport.actions.map((action) => ({
-      title: action.title,
-      details: action.text
+    next_actions: taskQueue.map((task) => ({
+      title: task.title,
+      details: task.details,
+      owner: task.owner,
+      priority: task.priority,
+      status: task.status
     })),
     share_summary: state.lastReport.summary
+  };
+}
+
+function buildRoutingDecision() {
+  const priority = state.lastReport.drama > 70 ? "high" : state.lastReport.vibeScore < 60 ? "medium" : "normal";
+  const needsHumanReview = state.lastReport.drama > 70 || state.lastReport.vibeScore < 55;
+  const suggestedChannel = needsHumanReview ? "organizer_alert" : "group_chat_summary";
+  const reviewReason = needsHumanReview
+    ? "High drama or low confidence means an organizer should review before posting."
+    : "Group mood is stable enough for an automated recap.";
+
+  return {
+    priority,
+    suggested_channel: suggestedChannel,
+    needs_human_review: needsHumanReview,
+    review_reason: reviewReason,
+    automation_path: needsHumanReview ? "alert_organizer_then_log" : "log_and_post_recap"
+  };
+}
+
+function buildSheetRow(rowId, routing) {
+  return {
+    log_id: rowId,
+    created_at: new Date().toISOString(),
+    session_code: state.sessionCode,
+    session_title: state.lastReport.title,
+    mode: state.mode,
+    question: state.lastReport.question,
+    response_count: state.responses.length,
+    winning_option: state.lastReport.winning,
+    vibe_score: state.lastReport.vibeScore,
+    drama_meter: state.lastReport.drama,
+    priority: routing.priority,
+    needs_human_review: routing.needs_human_review,
+    suggested_channel: routing.suggested_channel,
+    share_summary: state.lastReport.summary
+  };
+}
+
+function buildOrganizerAlert(routing) {
+  return {
+    title: `Review needed: ${state.lastReport.title}`,
+    message: `${state.lastReport.title} has ${routing.priority} priority. Drama meter is ${state.lastReport.drama}% and the winning option is "${state.lastReport.winning}". Review before posting the group recap.`,
+    suggested_action: "Check comments, confirm the decision, then post the recap."
+  };
+}
+
+function buildGroupRecap(routing) {
+  return {
+    channel: routing.suggested_channel,
+    message: state.lastReport.summary,
+    short_caption: `${state.lastReport.winning} is leading with ${state.lastReport.vibeScore}% vibe. ${routing.needs_human_review ? "Organizer review needed." : "Ready to post."}`
   };
 }
 
@@ -631,6 +702,9 @@ async function copySessionLink() {
 function renderAutomationPayload() {
   const payload = buildAutomationPayload();
   $("automationPayload").textContent = JSON.stringify(payload, null, 2);
+  $("automationPreviewRoute").textContent = payload.routing.automation_path;
+  $("automationPreviewReview").textContent = payload.routing.needs_human_review ? "needed" : "not needed";
+  $("automationPreviewTasks").textContent = `${payload.automation_outputs.task_queue.length} ready`;
   updateAutomationRoute();
 }
 

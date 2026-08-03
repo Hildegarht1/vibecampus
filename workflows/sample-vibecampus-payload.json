@@ -1,0 +1,86 @@
+{
+  "event": "vibecampus.vibe_report.generated",
+  "source": "VibeCampus dashboard",
+  "mode": "event",
+  "created_at": "2026-08-01T10:30:00.000Z",
+  "session": {
+    "code": "VC-DEMO",
+    "title": "Cultural night planning",
+    "question": "What should we improve for the next cultural night?",
+    "share_link": "https://hildegarht1.github.io/vibecampus/?session=VC-DEMO#create",
+    "response_count": 6
+  },
+  "votes": {
+    "selected_options": [
+      "Friday evening",
+      "Saturday afternoon",
+      "Sunday chill session",
+      "Let the group chat decide"
+    ],
+    "counts": {
+      "Friday evening": 3,
+      "Saturday afternoon": 1,
+      "Sunday chill session": 1,
+      "Let the group chat decide": 1
+    }
+  },
+  "participants": {
+    "named_count": 6,
+    "anonymous_count": 0,
+    "submitters": ["Ama", "Max", "Lea", "Sam", "Mina", "Theo"]
+  },
+  "ai_analysis": {
+    "vibe_score": 78,
+    "drama_meter": 44,
+    "winning_option": "Friday evening",
+    "meme_status": "\"The vibe is giving organized chaos, but make it productive.\"",
+    "summary": "The campus vibe is warm. People are engaged, and the biggest theme is budget.",
+    "themes": [
+      { "label": "budget", "score": 3 },
+      { "label": "food", "score": 2 },
+      { "label": "planning", "score": 2 }
+    ]
+  },
+  "routing": {
+    "priority": "normal",
+    "suggested_channel": "group_chat_summary",
+    "needs_human_review": false,
+    "review_reason": "Group mood is stable enough for an automated recap.",
+    "automation_path": "log_and_post_recap"
+  },
+  "automation_outputs": {
+    "google_sheets_row": {
+      "log_id": "VCLOG-1783000000000",
+      "created_at": "2026-08-01T10:30:00.000Z",
+      "session_code": "VC-DEMO",
+      "session_title": "Cultural night planning",
+      "mode": "event",
+      "question": "What should we improve for the next cultural night?",
+      "response_count": 6,
+      "winning_option": "Friday evening",
+      "vibe_score": 78,
+      "drama_meter": 44,
+      "priority": "normal",
+      "needs_human_review": false,
+      "suggested_channel": "group_chat_summary",
+      "share_summary": "VibeCampus report for Cultural night planning..."
+    },
+    "task_queue": [
+      {
+        "task_id": "VC-DEMO-TASK-1",
+        "title": "Lock the vibe",
+        "details": "Confirm Friday evening as the current decision unless new votes change the group mood.",
+        "owner": "Session owner",
+        "status": "open",
+        "priority": "normal",
+        "due_hint": "today"
+      }
+    ],
+    "organizer_alert": null,
+    "group_recap": {
+      "channel": "group_chat_summary",
+      "message": "VibeCampus report for Cultural night planning...",
+      "short_caption": "Friday evening is leading with 78% vibe. Ready to post."
+    }
+  }
+}
