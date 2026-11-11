@@ -732,7 +732,7 @@ async function sendAutomation() {
       mode: "no-cors",
       body: JSON.stringify(payload)
     });
-    $("automationStatus").textContent = "Payload sent. Check your Make/n8n scenario history for the incoming webhook run.";
+    $("automationStatus").textContent = "Dispatch attempted. This browser cannot confirm delivery; check your Make/n8n scenario history.";
     showToast("Webhook handoff sent.");
   } catch {
     $("automationStatus").textContent = "Webhook handoff failed. Check the URL, browser permissions, or use the local payload preview.";

@@ -6,7 +6,21 @@ VibeCampus is a colorful AI automation project for campus feedback, study groups
 
 **Live demo:** https://hildegarht1.github.io/vibecampus/
 
-## What It Does
+## Automated Quality Checks
+
+Run `npm install`, `npx playwright install chromium`, and `npm test`.
+Each scenario uses a fresh browser context with independent local storage. The suite
+checks reports, JSON payloads, simulation, named votes, memes, vote-only submissions,
+and outgoing webhook requests and network failures using Playwright interception.
+No real webhook or credentials are needed; mocked requests do not verify live Make delivery.
+Failures save screenshots, error details, and Playwright traces under `test-results/`.
+Open a trace with `npx playwright show-trace test-results/<test-name>/trace.zip`.
+
+The Browser QA GitHub Actions workflow runs on pushes and pull requests and uploads
+failure evidence. A successful remote Actions run must be verified after pushing.
+The application currently uses rule-based analysis, not an LLM agent.
+
+## Features
 
 - Creates campus polls and feedback sessions
 - Supports event, study, rant, and meme-style modes
