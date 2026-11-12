@@ -168,6 +168,7 @@ async function main() {
       await page.click("#addResponse");
 
       await page.locator("#responseList").getByText("Hilda", { exact: false }).waitFor({ state: "visible" });
+      await page.click("#runVibeCheck");
       await page.click('a[href="#automation"]');
       const payload = JSON.parse(await page.textContent("#automationPayload"));
 
@@ -211,12 +212,35 @@ async function main() {
       const payload = JSON.parse(await page.textContent("#automationPayload"));
       assert.equal(payload.event, "vibecampus.vibe_report.generated");
     });
+    await runTest("warns before generating with an unsubmitted comment", async (page) => {
+      await page.fill("#newResponse", "Keep tickets cheap please.");
+      await page.click("#runVibeCheck");
+      await page.locator("#toast").filter({ hasText: "Submit your vote first" }).waitFor();
+      assert.equal(await page.inputValue("#newResponse"), "Keep tickets cheap please.");
+      assert.equal(await page.evaluate(() => document.activeElement.id), "addResponse");
+    });
+    await runTest("reveals the report after generation", async (page) => {
+      await page.click("#runVibeCheck");
+      await page.waitForFunction(() => {
+        const top = document.querySelector("#results").getBoundingClientRect().top;
+        return top >= -10 && top < window.innerHeight / 2;
+      });
+    });
     await runTest("allows a vote without a comment", async (page) => {
       await page.locator("#studentVoteOptions [data-vote='Saturday afternoon']").click();
       await page.fill("#newResponse", "   ");
       await page.click("#addResponse");
+      await page.click("#runVibeCheck");
       const payload = JSON.parse(await page.textContent("#automationPayload"));
       assert.equal(payload.responses[0].text, "Voted for Saturday afternoon.");
+    });
+    await runTest("keeps the report unchanged until explicitly generated", async (page) => {
+      const previous = await page.inputValue("#shareSummary");
+      await page.fill("#newResponse", "Budget stress: expensive tickets, late food and a painful queue.");
+      await page.click("#addResponse");
+      assert.equal(await page.inputValue("#shareSummary"), previous);
+      await page.click("#runVibeCheck");
+      assert.notEqual(await page.inputValue("#shareSummary"), previous);
     });
   } finally {
     await browser.close();

@@ -150,7 +150,16 @@ function bindEvents() {
     renderVoteOptions();
     runAnalysis();
   });
-  $("runVibeCheck").addEventListener("click", runAnalysis);
+  $("runVibeCheck").addEventListener("click", () => {
+    if ($("newResponse").value.trim()) {
+      showToast("Submit your vote first to include this comment in the report.");
+      $("addResponse").focus();
+      return;
+    }
+    runAnalysis();
+    $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+    showToast("Vibe report updated.");
+  });
   $("copySummary").addEventListener("click", copySummary);
   $("saveSession").addEventListener("click", saveSession);
   $("newSessionCode").addEventListener("click", refreshSessionCode);
@@ -295,7 +304,7 @@ function addResponse() {
   $("newResponse").value = "";
   renderResponses();
   renderVoteOptions();
-  runAnalysis();
+  showToast("Vote submitted. Generate the vibe report to update the analysis.");
 }
 
 function runAnalysis() {
